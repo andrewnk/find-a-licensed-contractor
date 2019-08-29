@@ -16,8 +16,7 @@
         >
       </div>
       <div class="select-license-type">
-        <v-select
-          v-if="licenseTypes.length"
+        <v-select    
           ref="contractorSelect"
           v-model="licenseType"
           label="license_type"
@@ -53,7 +52,7 @@
         data-sticky-container
       >
         <thead
-          class="sticky center bg-white"
+          class="sticky center"
           data-sticky
           data-top-anchor="filter-results:bottom"
           data-btm-anchor="page:bottom"
@@ -70,6 +69,9 @@
               <span>Special Categories</span>
             </th>
             <th>
+              <span>Contractor Type</span>
+            </th>
+            <th>
               <span>License #</span>
             </th>
           </tr>
@@ -78,16 +80,19 @@
         <tr
           v-for="license in filteredLicenses"
           :key="license.licensenumber"
-          class="license-row wp-row" 
+          class="license-row" 
         >
           <td>
-            {{ license.contactname }}
+            {{ license.contactname | upperCase }}
           </td>
           <td>
-            {{ license.companyname }}
+            {{ license.companyname | upperCase }}
           </td>
           <td>
             {{ license.icccategory }}
+          </td>
+          <td>
+            {{ license.licensetype | titleCase }}
           </td>
           <td>
             {{ license.licensenumber }}
@@ -117,7 +122,17 @@ export default {
     vSelect,
   },
   filters: {
-    
+    'upperCase': function(value) {
+      if (value) {
+        return value.toUpperCase();
+      }
+    },
+
+    'titleCase': function(str) {
+      return str.replace(/\w\S*/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      });
+    },
   },
   data: function() {
     return {
@@ -154,11 +169,11 @@ export default {
 
   watch: {
     licenseType: function() {
-      this.filterByType();
+      this.filter();
     },
 
     search: function() {
-      this.filterBySearch();
+      this.filter();
     },
   },
 
@@ -167,6 +182,14 @@ export default {
   },
 
   methods: {
+
+    toTitleCase: function(str) {
+      return str.replace(/\w\S*/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      });
+    },
+    
+
     getAllLicenses: function() {
       {
         axios
@@ -189,27 +212,37 @@ export default {
       this.licenses.rows.forEach((license) => {
         let newLicenseType = license.licensetype;
         if (newLicenseType !== null && newLicenseType !== '') {
-          this.licenseTypes.push(newLicenseType);
+          this.licenseTypes.push(this.toTitleCase(newLicenseType));
         }
       });
 
       this.licenseTypes =  this.licenseTypes.filter((item, index) => this.licenseTypes.indexOf(item) === index).sort();
+
     },
 
     filterBySearch: function () {
-      
-      this.$search(this.search, this.filteredLicenses, this.searchOptions).then(licenses => {
-        this.filteredLicenses = licenses;
-      });
-      
+      if (this.search !== '' && this.search !== null ) {
+        this.$search(this.search, this.filteredLicenses, this.searchOptions).then(licenses => {
+          this.filteredLicenses = licenses;
+        }); 
+      } 
     },
 
     filterByType: function() {
-      this.$search(this.licenseType, this.filteredLicenses, this.contractorOptions).then(licenses => {
-        this.filteredLicenses = licenses;
-      });
+      if (this.licenseType !== '' && this.licenseType !== null) {
+        this.$search(this.licenseType, this.filteredLicenses, this.contractorOptions).then(licenses => {
+          this.filteredLicenses = licenses;
+        });
+      }
     },
 
+    filter: async function() {
+      this.filteredLicenses = this.licenses.rows;
+      await this.filterByType();
+      await this.filterBySearch();
+    },
+
+    
   },
 };
 </script>
@@ -221,12 +254,20 @@ export default {
 
 #finder-app {
   max-width: 85%;
-  margin: 10px auto 0px auto;
+  margin: 0 auto;
 }
 
 .filter-by {
   display: flex;
   flex-direction: row;
+   position: sticky;
+   position: -webkit-sticky;
+  top: 0;
+    z-index:100;
+    width: 100%;
+    background-color: white;
+    padding-top: 10px;
+
   .search{
     width: 50%;
     margin-right: 5px;
@@ -241,8 +282,11 @@ export default {
   }
 }
 
-.license-holder {
-  width: 45%
+.table-container {
+  
+  .license-holder {
+    width: 40%
+  }
 }
 
 </style>
