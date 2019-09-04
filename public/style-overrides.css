@@ -1,0 +1,22 @@
+.logo {
+    max-width: 250px !important;
+}
+.logo img {
+    max-width: 250px !important;
+}
+
+
+ .site-header {
+    position: sticky;
+    position: -webkit-sticky;
+    top: 0;
+    z-index: 100;
+} 
+
+.app-nav {
+    position: sticky;
+    top: 72px;
+    position: -webkit-sticky;
+    z-index: 100;
+
+}

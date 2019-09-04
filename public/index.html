@@ -11,6 +11,7 @@
   <link href="https://www.phila.gov/wp-content/themes/phila.gov-theme/css/styles.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-6jHF7Z3XI3fF4XZixAuSu0gGKrXwoX/w3uFPxC56OtjChio7wtTGJWRW53Nhx6Ev"
     crossorigin="anonymous">
+  <link rel="stylesheet" href="style-overrides.css">
 <meta property="og:title" content=""> 
 <meta property="og:description" content=""> 
 <meta property="og:type" content="website">
@@ -18,23 +19,25 @@
 <meta property="og:site_name" content="Digital Standards | City of Philadelphia">
 <meta property="og:image" content="https://phila.gov/media/20160715133810/phila-gov.jpg">
 
+
 </head>
 
 <body lang="en">
   <div id="application">
   <!-- Begin header -->
-  <header class="site-header app group">
-    <div class="row expanded">
+
+  <div class="site-header app group" >
+    <div class="row expanded" >
       <!-- if you don't want a full-width header, remove the expanded class -->
       <div class="columns">
-        <a href="http://phila.gov/" class="logo">
-          <img src="https://standards.phila.gov/img/logo/city-of-philadelphia-yellow-white.png" alt="City of Philadelphia">
+        <a href="https://www.phila.gov/li/pages/default.aspx" class="logo">
+          <img src="L&I-Logo.png" alt="Licenses and Inspection Logo">
         </a>
         <div class="app-divide"></div>
         <div class="page-title-container">
           <a href="#/">
             <h1 class="page-title">Licensed Contractor Finder</h1>
-            <h2 class="page-subtitle">Find companies or individuals that are licensed as contractors in Philadelphia.
+            <h2 class="page-subtitle">Verify companies or individuals are licensed as contractors in Philadelphia.
 
             </h2>
           </a>
@@ -42,26 +45,9 @@
         
       </div>
     </div>
-  </header>
-  <!-- <div class="app-nav">
-    <div class="row expanded">
-      <div class="columns">
-        <nav>
-          <ul>
-            <li>
-              <a href="#">Link 1</a>
-            </li>
-            <li>
-              <a href="#">Link 2</a>
-            </li>
-            <li>
-              <a href="#">Link 3</a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </div>
-  </div> -->
+    
+  </div>
+  <div class="app-nav" ></div>
 
   <main>
     <div id="vue-app"></div>
@@ -72,9 +58,10 @@
       <div class="row expanded">
         <div class="columns">
           <nav>
-            <ul class="inline-list">
+              <!-- fixes off center issues -->
+            <ul style="list-style-type: none; padding-left: 0px; margin-left: 0px">
               <li>
-                <a href="https://phila.gov/feedback/">Feedback</a>
+                <a href="https://phila.gov/">City of Philadelphia</a>
               </li>
             </ul>
           </nav>

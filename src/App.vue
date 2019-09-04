@@ -9,7 +9,9 @@
           type="text"
           placeholder="Search by license holder, company, or number"
           @keyup.enter="filter()"
-        ><input
+        >
+        
+        <input
           ref="archive-search-bar"
           type="submit"
           class="search-submit"
@@ -18,12 +20,12 @@
         >
       </div>
       <div class="select-license-type">
-        <v-select    
+        <v-select
           ref="contractorSelect"
           v-model="licenseType"
           label="license_type"
           placeholder="All contractor types"
-          :options="licenseTypes"
+          :options="lTypesCounts"
         />
       </div>
     </div>
@@ -58,13 +60,15 @@
           data-sticky
           data-top-anchor="filter-results:bottom"
           data-btm-anchor="page:bottom"
-          data-options="marginTop:4.8;"
         >
           <tr>
             <th class="license-holder-title">
               <span>License Holder</span>
             </th>
-            <th class="company-name">
+            <th 
+              v-if="!mobile"
+              class="company-name"
+            >
               <span>Company Name</span>
             </th>
             <th 
@@ -73,7 +77,10 @@
             >
               <span>Special Inspection Categories</span>
             </th>
-            <th class="contractor-type">
+            <th 
+              v-if="!mobile"
+              class="contractor-type"
+            >
               <span>Contractor Type</span>
             </th>
             <th class="license-number">
@@ -81,9 +88,16 @@
             </th>
           </tr>
         </thead>
-        <tbody>
+        <!-- <tbody> -->
+        <paginate
+          name="filteredLicenses"
+          :list="filteredLicenses"
+          class="paginate-list"
+          tag="tbody"
+          :per="25"
+        >
           <tr
-            v-for="license in filteredLicenses"
+            v-for="license in paginated('filteredLicenses')"
             :key="license.licensenumber"
             class="license-row" 
           >
@@ -93,6 +107,7 @@
               {{ license.contactname | upperCase }}
             </td>
             <td
+              v-if="!mobile"
               class="company-name"
             >
               {{ license.companyname | upperCase }}
@@ -104,6 +119,7 @@
               {{ license.icccategory }}
             </td>
             <td
+              v-if="!mobile"
               class="contractor-type"
             >
               {{ license.licensetype | titleCase }}
@@ -114,8 +130,25 @@
               {{ license.licensenumber }}
             </td>
           </tr>
-        </tbody>
+        </paginate>
+        <!-- </tbody> -->
       </table>
+      <div class="app-pages">
+        <p> Showing <b> {{ numberOf }} </b> contractors </p>
+        <paginate-links
+          v-show="!loading && !emptyResponse && !failure && displayPaginate"
+          for="filteredLicenses"
+          :async="true"
+          :limit="3"
+          :show-step-links="true"
+          :hide-single-page="false"
+          :step-links="{
+            next: 'Next',
+            prev: 'Previous'
+          }"
+          @change="scrollToTop"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -132,6 +165,9 @@ Vue.use(VueFuse);
 
 const serviceURL = "https://data.phila.gov/carto/api/v2/sql?q=";
 const query_base = "SELECT contactname, companyname, icccategory, licensenumber, licensetype FROM li_trade_licenses WHERE licensestatus = 'ACTIVE'";
+
+const licensetype_query = "SELECT DISTINCT licensetype FROM li_trade_licenses";
+const licensetype_query_counts = "SELECT licensetype, COUNT(1) as licensecount FROM li_trade_licenses WHERE licensestatus = 'ACTIVE' GROUP BY licensetype";
 
 export default {
   name: "FindALicensedContractor",
@@ -157,14 +193,18 @@ export default {
       licenseType: '',
       licenses: {},
       licenseTypes: [],
+      lTypesCounts: [],
       filteredLicenses: [],
       sortedLicenses: [],
       loading: true,
       emptyResponse: false,
       failure: false,
       specialCategories: false,
+      displayPaginate: true,
+      mobile: false,
+      paginate: [ 'filteredLicenses' ],
       searchOptions: {
-        threshold: 0.2, 
+        threshold: 0.15, 
         keys: [
           'contactname',
           'companyname',
@@ -182,7 +222,9 @@ export default {
     };
   },
   computed: { 
-    
+    numberOf : function() {
+      return this.filteredLicenses.length;
+    },
   },
 
   watch: {
@@ -190,17 +232,31 @@ export default {
       this.filter();
     },
 
-    // search: function() {
-    //   this.filter();
-    // },
+    search: function() {
+      this.filter();
+    },
+    
+    loading : function(val) {
+      if (val === false) {
+        this.countLicenses();
+      }
+    },
   },
 
-  mounted: function() {
+  mounted: async function() {
     this.getAllLicenses();
+    this.getLicenseTypes();
+  },
+  
+  created() {
+    window.addEventListener('resize', this.onResize);
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.onResize);
   },
 
   methods: {
-
     getAllLicenses: function() {
       {
         axios
@@ -220,7 +276,8 @@ export default {
             });
             this.filteredLicenses = this.sortedLicenses;
             this.loading = false;
-            this.getLicenseTypes();
+            
+            
           })
           .catch(e => {
             window.console.log(e);
@@ -231,16 +288,28 @@ export default {
     },
 
     getLicenseTypes: function() {
-      this.licenses.rows.forEach((license) => {
-        let newLicenseType = license.licensetype;
-        if (newLicenseType !== null && newLicenseType !== '') {
-          this.licenseTypes.push(this.toTitleCase(newLicenseType));
-        }
+      {
+        axios
+          .get(serviceURL+licensetype_query)
+          .then(response => {
+            this.licenseTypes = response.data.rows;
+            this.licenseTypes = this.licenseTypes.map(function(x) {
+              return (x.licensetype);
+            }).sort();
+            
+          });
+      }
+    },
+
+    countLicenses: function() {
+
+      this.lTypesCounts = [];
+      this.licenseTypes.forEach((category)=> {
+        let categoryCount = this.filteredLicenses.filter(license => license.licensetype === category).length;
+        this.lTypesCounts.push(this.toTitleCase(category) + " (" +  categoryCount + ")");  
       });
 
-      this.licenseTypes =  this.licenseTypes.filter((item, index) => this.licenseTypes.indexOf(item) === index).sort();
-
-    },
+    }, 
 
     filterBySearch: function () {
       if (this.search !== '' && this.search !== null ) {
@@ -252,11 +321,13 @@ export default {
 
     filterByType: function() {
       if (this.licenseType !== '' && this.licenseType !== null ) {
+
+        let categoryNoCount = this.licenseType.split(" (")[0];
         //only add special categories column if these are selected, or all contractors are selected
-        if (this.licenseType === "Special Inspection Agency" || this.licenseType === "Special Inspector") {
+        if (categoryNoCount === "Special Inspection Agency" || categoryNoCount === "Special Inspector") {
           this.specialCategories = true;
         }
-        this.$search(this.licenseType, this.filteredLicenses, this.contractorOptions).then(licenses => {
+        this.$search(categoryNoCount, this.filteredLicenses, this.contractorOptions).then(licenses => {
           this.filteredLicenses = licenses;
         });
       } 
@@ -265,15 +336,39 @@ export default {
     filter: async function() {
       this.filteredLicenses = this.sortedLicenses;
       this.specialCategories = false;
-      await this.filterByType();
       await this.filterBySearch();
-      
+      await this.filterByType();
+      await this.checkEmpty();
     },
 
     toTitleCase: function(str) {
-      return str.replace(/\w\S*/g, function(txt){
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      if (str !== null && str !== undefined){
+
+        return str.replace(/\w\S*/g, function(txt){
+          return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            
+        });
+      }
+    },
+
+    checkEmpty: function() {
+      this.emptyResponse = (this.filteredLicenses.length === 0) ? true : false;
+      this.displayPaginate = (this.filteredLicenses.length > 25) ? true : false;
+    },
+
+    scrollToTop : function () {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
       });
+    },
+
+    onResize() {
+      if (window.innerWidth <= 750) {
+        this.mobile = true;
+      } else {
+        this.mobile = false;
+      }
     },
 
   },
@@ -286,20 +381,21 @@ export default {
 
 
 #finder-app {
-  max-width: 85%;
-  margin: 0 auto;
-  padding-bottom: 30px;
-
+   padding-bottom: 70px;
+  
   .filter-by {
+    width: 100%;
+    margin: 0px auto 0 auto;
     display: flex;
     flex-direction: row;
     position: sticky;
     position: -webkit-sticky; //for safari
-    top: 0;
+    top: 86px;
     z-index:100;
     width: 100%;
+    background-color: #25cef7;
     background-color: white;
-    padding-top: 15px;
+    padding: 30px 7.5% 14px 7.5%;
     border-bottom: solid 2px #0f4d90;
 
     .search{
@@ -311,6 +407,7 @@ export default {
       width: 50%;
       margin-left: 5px;
       .v-select {
+        background-color: white;
          
         font-family:"Open Sans", Helvetica, Roboto, Arial, sans-serif !important;
         
@@ -358,6 +455,7 @@ export default {
         .vs__dropdown-menu {
           font-weight: bold;
           margin-top: 1px;
+          z-index: 1000;
 
           .vs__dropdown-option {
             border-bottom: 1px solid #f0f0f0;
@@ -374,24 +472,24 @@ export default {
   }
 
   .table-container {
+     max-width: 85%;
+    margin:0px auto 0px auto;
 
-    table, th , td {
+      td {
       border: 3px solid white;
     }
     
     .license-holder {
       font-weight: bold;
       font-size: 16px;
-        width: 50%;
     }
 
     .license-holder-title{
      min-width: 30%;
-     width: 50%;
     }
 
     .company-name {
-      max-width: 20%;
+      width: 20%;
     }
 
     .special-categories {
@@ -399,15 +497,52 @@ export default {
     }
 
     .contractor-type {
-      width: 15%;
+      width: 17%;
     }
 
     .license-number {
-      max-width: 10%;
+      width: 10%;
       text-align: right;
       font-weight: bold;
     }
   }
+
+  .app-pages{
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 800px) {
+
+    .logo {
+      width: 170px;
+    }
+
+    .filter-by {
+      display: flex;
+      flex-direction: column;
+       padding: 15px 2.5% 10px 2.5%;
+       position: relative;
+
+      .search {
+        width: 100%  ;
+        margin-right: 0;
+      }
+
+      .select-license-type {
+        width: 100% ;
+        margin-left: 0;
+      }
+    }
+    .table-container {
+      // max-width: 95%;
+      
+      table {
+        // max-width: 375px;
+      }
+    }
+  }
 }
+
 
 </style>
