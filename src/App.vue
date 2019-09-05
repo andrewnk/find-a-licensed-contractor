@@ -7,7 +7,7 @@
           v-model="search"
           class="search-field"
           type="text"
-          placeholder="Search by license holder, company, or number"
+          placeholder="Search by license holder, company, or #"
           @keyup.enter="filter()"
         >
         
@@ -66,7 +66,7 @@
               <span>License Holder</span>
             </th>
             <th 
-              v-if="!mobile"
+              v-if="!isMobile()"
               class="company-name"
             >
               <span>Company Name</span>
@@ -78,7 +78,7 @@
               <span>Special Inspection Categories</span>
             </th>
             <th 
-              v-if="!mobile"
+              v-if="!isMobile()"
               class="contractor-type"
             >
               <span>Contractor Type</span>
@@ -94,7 +94,7 @@
           :list="filteredLicenses"
           class="paginate-list"
           tag="tbody"
-          :per="25"
+          :per="50"
         >
           <tr
             v-for="license in paginated('filteredLicenses')"
@@ -107,7 +107,7 @@
               {{ license.contactname | upperCase }}
             </td>
             <td
-              v-if="!mobile"
+              v-if="!isMobile()"
               class="company-name"
             >
               {{ license.companyname | upperCase }}
@@ -119,7 +119,7 @@
               {{ license.icccategory }}
             </td>
             <td
-              v-if="!mobile"
+              v-if="!isMobile()"
               class="contractor-type"
             >
               {{ license.licensetype | titleCase }}
@@ -201,7 +201,6 @@ export default {
       failure: false,
       specialCategories: false,
       displayPaginate: true,
-      mobile: false,
       paginate: [ 'filteredLicenses' ],
       searchOptions: {
         threshold: 0.15, 
@@ -247,14 +246,6 @@ export default {
     this.getAllLicenses();
     this.getLicenseTypes();
   },
-  
-  created() {
-    window.addEventListener('resize', this.onResize);
-  },
-
-  beforeDestroy() {
-    window.removeEventListener('resize', this.onResize);
-  },
 
   methods: {
     getAllLicenses: function() {
@@ -266,11 +257,16 @@ export default {
 
             // sorted by name -- doesnt work due to null values
             // this.sortedLicenses = this.licenses.rows.sort(function(a, b){
-            //     if(a.contactname.trim() < b.contactname.trim()) { return -1; }
-            //     if(a.contactname.trim() > b.contactname.trim()) { return 1; }
-            //   return 0;});
+            //   if(a.contactname.trim() < b.contactname.trim()) {
+            //     return -1; 
+            //   }
+            //   if(a.contactname.trim() > b.contactname.trim()) {
+            //     return 1; 
+            //   }
+            //   return 0;
+            // });
             
-            // sorted by license number
+            // // sorted by license number
             this.sortedLicenses = this.licenses.rows.sort(function (a, b) {
               return a.licensenumber - b.licensenumber;
             });
@@ -353,7 +349,7 @@ export default {
 
     checkEmpty: function() {
       this.emptyResponse = (this.filteredLicenses.length === 0) ? true : false;
-      this.displayPaginate = (this.filteredLicenses.length > 25) ? true : false;
+      this.displayPaginate = (this.filteredLicenses.length >= 50) ? true : false;
     },
 
     scrollToTop : function () {
@@ -363,12 +359,11 @@ export default {
       });
     },
 
-    onResize() {
-      if (window.innerWidth <= 750) {
-        this.mobile = true;
-      } else {
-        this.mobile = false;
+    isMobile() {
+      if( window.innerWidth <= 760 ) {
+        return true;
       }
+      return false;
     },
 
   },
@@ -394,7 +389,7 @@ export default {
     z-index:100;
     width: 100%;
     background-color: #25cef7;
-    background-color: white;
+    background-color: whitesmoke;
     padding: 30px 7.5% 14px 7.5%;
     border-bottom: solid 2px #0f4d90;
 
@@ -510,9 +505,13 @@ export default {
   .app-pages{
     display: flex;
     justify-content: space-between;
+
+    p {
+      padding-left: 3px;
+    }
   }
 
-  @media (max-width: 800px) {
+  @media (max-width: 900px) {
 
     .logo {
       width: 170px;
@@ -523,6 +522,7 @@ export default {
       flex-direction: column;
        padding: 15px 2.5% 10px 2.5%;
        position: relative;
+       top: 0;
 
       .search {
         width: 100%  ;
@@ -540,6 +540,18 @@ export default {
       table {
         // max-width: 375px;
       }
+    }
+    .app-pages{
+    display: flex;
+    flex-direction: column-reverse;
+
+
+    p {
+      margin: 0 auto;
+    }
+    ul {
+      margin: 0 auto;
+    }
     }
   }
 }

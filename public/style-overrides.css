@@ -11,6 +11,7 @@
     position: -webkit-sticky;
     top: 0;
     z-index: 100;
+    max-height: 72px;
 } 
 
 .app-nav {
@@ -19,4 +20,31 @@
     position: -webkit-sticky;
     z-index: 100;
 
+}
+
+@media (max-width: 900px) {
+
+    .app-nav {
+        position: relative;
+        top: 0px;
+        z-index: 100;
+    
+
+    }
+
+    .site-header {
+        position: relative;
+        top: 0px;
+        z-index: 100;
+        max-height: 300px;
+    }
+    
+    .logo {
+        max-width: 175px;
+    }
+
+    .logo img {
+        max-width: 175px ;
+    }
+    
 }
