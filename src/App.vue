@@ -56,10 +56,7 @@
         data-sticky-container
       >
         <thead
-          class="sticky center"
-          data-sticky
-          data-top-anchor="filter-results:bottom"
-          data-btm-anchor="page:bottom"
+          class="center"
         >
           <tr>
             <th class="license-holder-title">
@@ -72,7 +69,7 @@
               <span>Company Name</span>
             </th>
             <th 
-              v-if="specialCategories"
+              v-if="specialCategories && !isMobile()"
               class="special-categories"
             >
               <span>Special Inspection Categories</span>
@@ -113,7 +110,7 @@
               {{ license.companyname | upperCase }}
             </td>
             <td
-              v-if="specialCategories"
+              v-if="specialCategories && !isMobile()"
               class="special-categories"
             >
               {{ license.icccategory }}
@@ -136,17 +133,17 @@
       <div class="app-pages">
         <p> Showing <b> {{ numberOf }} </b> contractors </p>
         <paginate-links
-          v-show="!loading && !emptyResponse && !failure && displayPaginate"
+          v-show="!loading && !emptyResponse && !failure"
           for="filteredLicenses"
           :async="true"
           :limit="3"
           :show-step-links="true"
-          :hide-single-page="false"
+          :hide-single-page="true"
           :step-links="{
             next: 'Next',
             prev: 'Previous'
           }"
-          @change="scrollToTop"
+          @change="scrollToTop()"
         />
       </div>
     </div>
@@ -200,9 +197,9 @@ export default {
       emptyResponse: false,
       failure: false,
       specialCategories: false,
-      displayPaginate: true,
       paginate: [ 'filteredLicenses' ],
       searchOptions: {
+        shouldSort: false,
         threshold: 0.15, 
         keys: [
           'contactname',
@@ -255,21 +252,24 @@ export default {
           .then(response => {
             this.licenses = response.data;
 
-            // sorted by name -- doesnt work due to null values
-            // this.sortedLicenses = this.licenses.rows.sort(function(a, b){
-            //   if(a.contactname.trim() < b.contactname.trim()) {
-            //     return -1; 
-            //   }
-            //   if(a.contactname.trim() > b.contactname.trim()) {
-            //     return 1; 
-            //   }
-            //   return 0;
-            // });
-            
-            // // sorted by license number
-            this.sortedLicenses = this.licenses.rows.sort(function (a, b) {
-              return a.licensenumber - b.licensenumber;
+            //sorted alphabetically by name
+            this.sortedLicenses = this.licenses.rows.sort(function(a, b) {
+              if (a.contactname === b.contactname) {
+                return 0;
+              } else if (a.contactname === null) {
+                return 1;
+              } else if (b.contactname === null) {
+                return -1;
+              } 
+              return a.contactname.toLowerCase().trim() < b.contactname.toLowerCase().trim() ? -1 : 1;
             });
+
+            
+            // sorted by license number
+            // this.sortedLicenses = this.licenses.rows.sort(function (a, b) {
+            //   return a.licensenumber - b.licensenumber;
+            // });
+
             this.filteredLicenses = this.sortedLicenses;
             this.loading = false;
             
@@ -349,7 +349,6 @@ export default {
 
     checkEmpty: function() {
       this.emptyResponse = (this.filteredLicenses.length === 0) ? true : false;
-      this.displayPaginate = (this.filteredLicenses.length >= 50) ? true : false;
     },
 
     scrollToTop : function () {
@@ -388,10 +387,12 @@ export default {
     top: 86px;
     z-index:100;
     width: 100%;
-    background-color: #25cef7;
-    background-color: whitesmoke;
+    // background-color: #25cef7;
+    // background-color: whitesmoke;
+    background-color: white;
     padding: 30px 7.5% 14px 7.5%;
-    border-bottom: solid 2px #0f4d90;
+    // border-bottom: solid 2px #0f4d90;
+    box-shadow: 5px 5px 10px lightgrey;
 
     .search{
       width: 50%;
@@ -469,10 +470,6 @@ export default {
   .table-container {
      max-width: 85%;
     margin:0px auto 0px auto;
-
-      td {
-      border: 3px solid white;
-    }
     
     .license-holder {
       font-weight: bold;
@@ -534,13 +531,7 @@ export default {
         margin-left: 0;
       }
     }
-    .table-container {
-      // max-width: 95%;
-      
-      table {
-        // max-width: 375px;
-      }
-    }
+
     .app-pages{
     display: flex;
     flex-direction: column-reverse;
