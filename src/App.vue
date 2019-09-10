@@ -10,7 +10,6 @@
           placeholder="Search by license holder, company, or #"
           @keyup.enter="filter()"
         >
-        
         <input
           ref="archive-search-bar"
           type="submit"
@@ -162,9 +161,7 @@ Vue.use(VueFuse);
 
 const serviceURL = "https://data.phila.gov/carto/api/v2/sql?q=";
 const query_base = "SELECT contactname, companyname, icccategory, licensenumber, licensetype FROM li_trade_licenses WHERE licensestatus = 'ACTIVE'";
-
-const licensetype_query = "SELECT DISTINCT licensetype FROM li_trade_licenses";
-const licensetype_query_counts = "SELECT licensetype, COUNT(1) as licensecount FROM li_trade_licenses WHERE licensestatus = 'ACTIVE' GROUP BY licensetype";
+const query_licensetypes = "SELECT DISTINCT licensetype FROM li_trade_licenses";
 
 export default {
   name: "FindALicensedContractor",
@@ -264,7 +261,6 @@ export default {
               return a.contactname.toLowerCase().trim() < b.contactname.toLowerCase().trim() ? -1 : 1;
             });
 
-            
             // sorted by license number
             // this.sortedLicenses = this.licenses.rows.sort(function (a, b) {
             //   return a.licensenumber - b.licensenumber;
@@ -272,8 +268,6 @@ export default {
 
             this.filteredLicenses = this.sortedLicenses;
             this.loading = false;
-            
-            
           })
           .catch(e => {
             window.console.log(e);
@@ -286,29 +280,29 @@ export default {
     getLicenseTypes: function() {
       {
         axios
-          .get(serviceURL+licensetype_query)
+          .get(serviceURL+query_licensetypes)
           .then(response => {
             this.licenseTypes = response.data.rows;
             this.licenseTypes = this.licenseTypes.map(function(x) {
               return (x.licensetype);
             }).sort();
-            
+          })
+          .catch(e => {
+            window.console.log(e);
           });
       }
     },
 
     countLicenses: function() {
-
       this.lTypesCounts = [];
       this.licenseTypes.forEach((category)=> {
         let categoryCount = this.filteredLicenses.filter(license => license.licensetype === category).length;
         this.lTypesCounts.push(this.toTitleCase(category) + " (" +  categoryCount + ")");  
       });
-
     }, 
 
     filterBySearch: function () {
-      if (this.search !== '' && this.search !== null ) {
+      if (this.search) {
         this.$search(this.search, this.filteredLicenses, this.searchOptions).then(licenses => {
           this.filteredLicenses = licenses;
         }); 
@@ -316,7 +310,7 @@ export default {
     },
 
     filterByType: function() {
-      if (this.licenseType !== '' && this.licenseType !== null ) {
+      if (this.licenseType) {
 
         let categoryNoCount = this.licenseType.split(" (")[0];
         //only add special categories column if these are selected, or all contractors are selected
@@ -338,11 +332,9 @@ export default {
     },
 
     toTitleCase: function(str) {
-      if (str !== null && str !== undefined){
-
+      if (str){
         return str.replace(/\w\S*/g, function(txt){
           return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-            
         });
       }
     },
@@ -364,7 +356,6 @@ export default {
       }
       return false;
     },
-
   },
 };
 </script>
@@ -372,7 +363,6 @@ export default {
 <style lang="scss" >
 
 @import 'node_modules/vue-select/dist/vue-select';
-
 
 #finder-app {
    padding-bottom: 70px;
@@ -404,7 +394,6 @@ export default {
       margin-left: 5px;
       .v-select {
         background-color: white;
-         
         font-family:"Open Sans", Helvetica, Roboto, Arial, sans-serif !important;
         
         .vs__dropdown-toggle {
@@ -444,7 +433,6 @@ export default {
               background-color: transparent;
             }
           }
-
 
         }
 
@@ -535,14 +523,12 @@ export default {
     .app-pages{
     display: flex;
     flex-direction: column-reverse;
-
-
-    p {
-      margin: 0 auto;
-    }
-    ul {
-      margin: 0 auto;
-    }
+      p {
+        margin: 0 auto;
+      }
+      ul {
+        margin: 0 auto;
+      }
     }
   }
 }
