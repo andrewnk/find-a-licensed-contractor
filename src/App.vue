@@ -212,6 +212,7 @@ export default {
           'licensetype',
         ],
       },
+      routerQuery: {},
     };
   },
   computed: { 
@@ -221,12 +222,16 @@ export default {
   },
 
   watch: {
-    licenseType: function() {
+    licenseType: function(value) {
+      //split string if it exists, otherwise send null/empty val to delete from router
+      let val = value ? value.split(" (")[0] : value;  
       this.filter();
+      this.updateRouterQuery('licenseType', val);
     },
 
-    search: function() {
+    search: function(value) {
       this.filter();
+      this.updateRouterQuery('search', value);
     },
     
     loading : function(val) {
@@ -234,6 +239,14 @@ export default {
         this.countLicenses();
       }
     },
+
+    routerQuery: {
+      handler: function () {
+        this.updateRouter();
+      },
+      deep: true,
+    },
+
   },
 
   mounted: async function() {
@@ -273,6 +286,8 @@ export default {
             window.console.log(e);
             this.failure = true;
             this.loading = false;
+          }).finally(() => {
+            this.initFilters();
           });
       }
     },
@@ -356,6 +371,41 @@ export default {
       }
       return false;
     },
+
+    updateRouterQuery: function (key, value) {
+      if (!value) {
+        Vue.delete(this.routerQuery, key);
+      } else {
+        Vue.set(this.routerQuery, key, value);
+      }
+    },
+    resetRouterQuery: function () {
+      for (let routeKey in this.$route.query) {
+        Vue.delete(this.routerQuery, routeKey);
+      }
+    },
+
+    updateRouter: function () {
+      if (this.routerQuery  === this.$route.query) {
+        return;
+      } 
+      this.$router.push({
+        name: 'main',
+        query: this.routerQuery,
+      }).catch(e => {
+        // window.console.log(e);
+      });
+    },
+
+    initFilters: function() {
+      if (Object.keys(this.$route.query).length !== 0) {
+        for (let routerKey in this.$route.query) {
+
+          Vue.set(this, routerKey, this.$route.query[routerKey]);
+        }
+      }
+    },
+
   },
 };
 </script>
