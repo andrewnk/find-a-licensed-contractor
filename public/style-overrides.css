@@ -1,8 +1,11 @@
+#application
+.site-header 
 .logo {
-    max-width: 250px !important;
+    max-width: 250px;
 }
-.logo img {
-    max-width: 250px !important;
+#application
+.site-header  .logo img {
+    max-width: 250px;
 }
 
 
@@ -22,14 +25,34 @@
 
 }
 
-@media (max-width: 900px) {
+@media (max-width:850px) {
+
+    
+    #application
+    .site-header
+    .logo {
+        max-width: 175px;
+    }
+
+    #application
+    .site-header
+    .logo 
+    img {
+        max-width: 175px ;
+    }
+    
+    #application .app-footerr.anchor {
+        position: relative;
+    }
+}
+
+@media (max-width:760px) {
 
     .app-nav {
         position: relative;
         top: 0px;
         z-index: 100;
     
-
     }
 
     .site-header {
@@ -39,12 +62,17 @@
         max-height: 300px;
     }
     
+    #application
+    .site-header
     .logo {
-        max-width: 175px;
+        max-width: 200px;
     }
 
-    .logo img {
-        max-width: 175px ;
+    #application
+    .site-header
+    .logo 
+    img {
+        max-width: 200px ;
     }
     
 }

@@ -344,6 +344,7 @@ export default {
       await this.filterBySearch();
       await this.filterByType();
       await this.checkEmpty();
+      await this.scrollToTop();
     },
 
     toTitleCase: function(str) {
@@ -546,7 +547,7 @@ export default {
     }
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 760px) {
 
     .logo {
       width: 170px;
