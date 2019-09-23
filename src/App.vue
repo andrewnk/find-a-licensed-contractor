@@ -155,9 +155,17 @@ import axios from "axios";
 import vSelect from 'vue-select';
 import VuePaginate from "vue-paginate";
 import VueFuse from "vue-fuse";
+import VueAnalytics from "vue-analytics";
 
 Vue.use(VuePaginate);
 Vue.use(VueFuse);
+Vue.use(VueAnalytics, {
+  id: 'UA-860026-1',
+  debug: {
+    enabled: process.env.NODE_ENV === 'development',
+    sendHitTask: process.env.NODE_ENV === 'production',
+  },
+});
 
 const serviceURL = "https://data.phila.gov/carto/api/v2/sql?q=";
 const query_base = "SELECT contactname, companyname, icccategory, licensenumber, licensetype FROM li_trade_licenses WHERE licensestatus = 'ACTIVE'";
@@ -197,7 +205,7 @@ export default {
       paginate: [ 'filteredLicenses' ],
       searchOptions: {
         shouldSort: false,
-        threshold: 0.15, 
+        threshold: 0.2, 
         keys: [
           'contactname',
           'companyname',
@@ -231,7 +239,11 @@ export default {
 
     search: function(value) {
       this.filter();
-      this.updateRouterQuery('search', value);
+      if (value.length > 3) {
+        this.updateRouterQuery('search', value);
+      } else {
+        this.updateRouterQuery('search', null);
+      }
     },
     
     loading : function(val) {
@@ -378,6 +390,11 @@ export default {
         Vue.delete(this.routerQuery, key);
       } else {
         Vue.set(this.routerQuery, key, value);
+        if (key === 'search'){
+          this.$ga.event('licensed-contractor', 'search', value);
+        } else if (key === 'licenseType' ) {
+          this.$ga.event('licensed-contractor', 'contractor-type', value);
+        }
       }
     },
     resetRouterQuery: function () {
@@ -401,7 +418,6 @@ export default {
     initFilters: function() {
       if (Object.keys(this.$route.query).length !== 0) {
         for (let routerKey in this.$route.query) {
-
           Vue.set(this, routerKey, this.$route.query[routerKey]);
         }
       }
@@ -428,11 +444,8 @@ export default {
     top: 86px;
     z-index:100;
     width: 100%;
-    // background-color: #25cef7;
-    // background-color: whitesmoke;
     background-color: white;
     padding: 30px 7.5% 14px 7.5%;
-    // border-bottom: solid 2px #0f4d90;
     box-shadow: 5px 5px 10px lightgrey;
 
     .search{
@@ -583,6 +596,5 @@ export default {
     }
   }
 }
-
 
 </style>
