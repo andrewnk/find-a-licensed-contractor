@@ -17,6 +17,13 @@
           value="Search"
           @click="filter()"
         >
+        <button
+          v-if="search.length > 0"
+          class="clear-search-btn"
+          @click="clearSearchBar"
+        >
+          <i class="fas fa-times " />
+        </button>
       </div>
       <div class="select-license-type">
         <v-select
@@ -341,9 +348,6 @@ export default {
 
         let categoryNoCount = this.licenseType.split(" (")[0];
         //only add special categories column if these are selected, or all contractors are selected
-        if (categoryNoCount === "Special Inspection Agency" || categoryNoCount === "Special Inspector") {
-          this.specialCategories = true;
-        }
         this.$search(categoryNoCount, this.filteredLicenses, this.contractorOptions).then(licenses => {
           this.filteredLicenses = licenses;
         });
@@ -368,8 +372,15 @@ export default {
     },
 
     checkEmpty: function() {
-      this.emptyResponse = (this.filteredLicenses.length === 0) ? true : false;
+      this.emptyResponse = (this.filteredLicenses.length === 0);
+      
+      this.specialCategories = (this.search === "" && (this.licenseType === null || this.licenseType === "") ? false : 
+        (this.filteredLicenses.filter(function(license) {
+          return license.licensetype === "SPECIAL INSPECTION AGENCY" || license.licensetype === "SPECIAL INSPECTOR";
+        }).length > 0));
+      
     },
+
 
     scrollToTop : function () {
       window.scrollTo({
@@ -383,6 +394,10 @@ export default {
         return true;
       }
       return false;
+    },
+
+    clearSearchBar: function () {
+      this.search = "";
     },
 
     updateRouterQuery: function (key, value) {
@@ -451,6 +466,19 @@ export default {
     .search{
       width: 50%;
       margin-right: 5px;
+
+      .clear-search-btn {
+      position: absolute;
+      top:16px;
+      right: 70px;
+      padding: 0;
+      font-size: 20px;
+      background-color: #fff;
+      opacity: 0.8;
+      z-index: 999;
+      cursor: pointer;
+      color: rgba(60, 60, 60, 0.5);
+      }
     }
 
     .select-license-type {
@@ -522,6 +550,10 @@ export default {
   .table-container {
      max-width: 85%;
     margin:0px auto 0px auto;
+
+    table {
+      margin-top: 28px;
+    }
     
     .license-holder {
       font-weight: bold;
