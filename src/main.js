@@ -1,10 +1,13 @@
+require("./polyfills/Array.prototype.find.js");
+require("./polyfills/Array.prototype.includes.js");
+// require("./polyfills/String.prototype.includes.js");
+
 import Vue from 'vue';
 import App from './App.vue';
 import VueRouter from 'vue-router';
 
 Vue.config.productionTip = false;
 Vue.use(VueRouter);
-
 
 const router = new VueRouter({
   routes: [

@@ -269,8 +269,8 @@ export default {
   },
 
   mounted: async function() {
-    this.getAllLicenses();
-    this.getLicenseTypes();
+    await this.getAllLicenses();
+    //  this.getLicenseTypes();
   },
 
   methods: {
@@ -299,14 +299,16 @@ export default {
             // });
 
             this.filteredLicenses = this.sortedLicenses;
-            this.loading = false;
+            // this.loading = false;
           })
           .catch(e => {
             window.console.log(e);
             this.failure = true;
             this.loading = false;
           }).finally(() => {
-            this.initFilters();
+            this.getLicenseTypes();
+
+          
           });
       }
     },
@@ -320,9 +322,13 @@ export default {
             this.licenseTypes = this.licenseTypes.map(function(x) {
               return (x.licensetype);
             }).sort();
+            this.loading = false;
           })
           .catch(e => {
             window.console.log(e);
+          }).finally(() => {
+            this.initFilters();
+            
           });
       }
     },
