@@ -268,9 +268,8 @@ export default {
 
   },
 
-  mounted: async function() {
-    await this.getAllLicenses();
-    //  this.getLicenseTypes();
+  mounted: function() {
+    this.getAllLicenses();
   },
 
   methods: {
