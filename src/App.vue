@@ -299,7 +299,6 @@ export default {
             // });
 
             this.filteredLicenses = this.sortedLicenses;
-            // this.loading = false;
           })
           .catch(e => {
             window.console.log(e);
@@ -328,7 +327,6 @@ export default {
             window.console.log(e);
           }).finally(() => {
             this.initFilters();
-            
           });
       }
     },

@@ -5,5 +5,5 @@ Promise.prototype.finally = Promise.prototype.finally || {
       result => onFinally(result),
       reason => onFinally(Promise.reject(reason))
     );
-  }
+  },
 }.finally;
