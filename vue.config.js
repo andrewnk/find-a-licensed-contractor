@@ -1,4 +1,4 @@
 module.exports = {
   filenameHashing: false,
-  publicPath: "/find-a-licensed-contractor/production/",
+  publicPath: "/li/find-a-licensed-contractor/",
 };
