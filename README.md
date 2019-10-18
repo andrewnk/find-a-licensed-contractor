@@ -1,6 +1,8 @@
-# LicensedContractorFinder
+# Find a licensed contractor tool
+
 Vue app to find companies or individuals that are licensed as contractors in Philadelphia.
 
-npm i 
+## To install and run locally:
+* npm i 
 
-npm run serve
+* npm run serve
