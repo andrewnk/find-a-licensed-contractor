@@ -1,33 +1,30 @@
 #application
-.site-header 
+.site-header
 .logo {
     max-width: 250px;
 }
+
 #application
-.site-header  .logo img {
+.site-header .logo img {
     max-width: 250px;
 }
 
-
- .site-header {
+.site-header {
     position: sticky;
     position: -webkit-sticky;
     top: 0;
     z-index: 100;
     max-height: 72px;
-} 
+}
 
 .app-nav {
     position: sticky;
     top: 72px;
     position: -webkit-sticky;
     z-index: 100;
-
 }
 
 @media (max-width:850px) {
-
-    
     #application
     .site-header
     .logo {
@@ -36,23 +33,21 @@
 
     #application
     .site-header
-    .logo 
+    .logo
     img {
-        max-width: 175px ;
+        max-width: 175px;
     }
-    
+
     #application .app-footerr.anchor {
         position: relative;
     }
 }
 
 @media (max-width:760px) {
-
     .app-nav {
         position: relative;
         top: 0px;
         z-index: 100;
-    
     }
 
     .site-header {
@@ -61,7 +56,7 @@
         z-index: 100;
         max-height: 300px;
     }
-    
+
     #application
     .site-header
     .logo {
@@ -70,9 +65,8 @@
 
     #application
     .site-header
-    .logo 
+    .logo
     img {
-        max-width: 200px ;
+        max-width: 200px;
     }
-    
 }
